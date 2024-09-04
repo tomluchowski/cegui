@@ -211,7 +211,7 @@ void OgreGeometryBuffer::draw(uint32 drawModeMask) const
             d_renderSystem._setViewport(currentViewport);
 #else
             d_renderSystem.setScissorTest(
-                i->clip, d_clipRect.left(), d_clipRect.top(),
+                false, d_clipRect.left(), d_clipRect.top(),
                          d_clipRect.right(), d_clipRect.bottom());
 #endif
 

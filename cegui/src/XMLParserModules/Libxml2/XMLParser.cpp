@@ -99,7 +99,7 @@ void LibxmlParser::parseXML(XMLHandler& handler,
 
     if (!doc)
     {
-        xmlError* err = xmlGetLastError();
+        const xmlError* err = xmlGetLastError();
 
         CEGUI_THROW(GenericException(
             String("xmlParseMemory failed in file: '") +
