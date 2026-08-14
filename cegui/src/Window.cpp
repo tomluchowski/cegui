@@ -1028,7 +1028,7 @@ void Window::render(uint32 drawModeMask) {
 
   // do final rendering for surface if it's ours
   if (ctx.owner == this && allowDrawing)
-    ctx.surface->draw();
+    ctx.surface->draw(drawModeMask);
 }
 
 bool Window::checkIfDrawMaskAllowsDrawing(uint32 drawModeMask) const {

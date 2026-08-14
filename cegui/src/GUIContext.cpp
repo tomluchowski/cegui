@@ -241,12 +241,12 @@ void GUIContext::draw(uint32 drawModeMask) {
   if (d_isDirty)
     drawWindowContentToTarget(drawModeMask);
 
-  RenderingSurface::draw();
+  RenderingSurface::draw(drawModeMask);
 }
 
 //----------------------------------------------------------------------------//
 void GUIContext::drawContent(uint32 drawModeMask) {
-  RenderingSurface::drawContent();
+  RenderingSurface::drawContent(drawModeMask);
 
   if (drawModeMask & DrawModeFlagMouseCursor) {
     d_mouseCursor.draw(DrawModeFlagMouseCursor);
