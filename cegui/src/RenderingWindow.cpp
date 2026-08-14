@@ -164,7 +164,7 @@ void RenderingWindow::draw(uint32 drawModeMask) {
 
   if (d_invalidated) {
     // base class will render out queues for us
-    RenderingSurface::draw();
+    RenderingSurface::draw(drawModeMask);
     // mark as no longer invalidated
     d_invalidated = false;
   }

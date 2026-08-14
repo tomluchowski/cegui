@@ -226,7 +226,7 @@ public:
   cursor is Window::DrawModeFlagMouseCursor.
 
   */
-  virtual void draw();
+  virtual void draw(uint32 drawModeMask = DrawModeMaskAll);
 
   /*!
   \brief
@@ -338,7 +338,7 @@ protected:
   /** draw the surface content. Default impl draws the render queues.
    * NB: Called between RenderTarget activate and deactivate calls.
    */
-  virtual void drawContent();
+  virtual void drawContent(uint32 drawModeMask = DrawModeMaskAll);
 
   //! draw a rendering queue, firing events before and after.
   void draw(const RenderQueue &queue, RenderQueueEventArgs &args);

@@ -85,16 +85,16 @@ void RenderingSurface::clearGeometry() {
 }
 
 //----------------------------------------------------------------------------//
-void RenderingSurface::draw() {
+void RenderingSurface::draw(uint32 drawModeMask) {
   d_target->activate();
 
-  drawContent();
+  drawContent(drawModeMask);
 
   d_target->deactivate();
 }
 
 //----------------------------------------------------------------------------//
-void RenderingSurface::drawContent() {
+void RenderingSurface::drawContent(uint32 /*drawModeMask*/) {
   RenderQueueEventArgs evt_args(RQ_USER_0);
 
   for (RenderQueueList::iterator i = d_queues.begin(); d_queues.end() != i;
