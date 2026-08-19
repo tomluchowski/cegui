@@ -27,96 +27,94 @@
 #ifndef _CEGUIOgreRenderTarget_h_
 #define _CEGUIOgreRenderTarget_h_
 
+#include "../../Rect.h"
 #include "../../RenderTarget.h"
 #include "CEGUI/RendererModules/Ogre/Renderer.h"
-#include "../../Rect.h"
 #include <OgreMatrix4.h>
 
 // Start of CEGUI namespace section
-namespace CEGUI
-{
+namespace CEGUI {
 //! Intermediate RenderTarget implementing common parts for Ogre engine.
 template <typename T = RenderTarget>
-class OGRE_GUIRENDERER_API OgreRenderTarget : public T
-{
+class OGRE_GUIRENDERER_API OgreRenderTarget : public T {
 public:
-    //! Constructor
-    OgreRenderTarget(OgreRenderer& owner, Ogre::RenderSystem& rs);
+  //! Constructor
+  OgreRenderTarget(OgreRenderer &owner, Ogre::RenderSystem &rs);
 
-    //! Destructor
-    virtual ~OgreRenderTarget();
+  //! Destructor
+  virtual ~OgreRenderTarget();
 
 #if !defined(CEGUI_USE_OGRE_COMPOSITOR2)
-    /*!
-    \brief
-        Set the underlying viewport area directly - bypassing what the
-        RenderTarget considers to be it's area - thus allowing the view port
-        area used for rendering to be different to the area set for the target.
+  /*!
+  \brief
+      Set the underlying viewport area directly - bypassing what the
+      RenderTarget considers to be it's area - thus allowing the view port
+      area used for rendering to be different to the area set for the target.
 
-    \param area
-        Rect object describing the area to use in pixels.
+  \param area
+      Rect object describing the area to use in pixels.
 
-    \deprecated
-        This function is deprecated and will be removed or changed considerably
-        in future releases.
-    */
-    void setOgreViewportDimensions(const Rectf& area);
+  \deprecated
+      This function is deprecated and will be removed or changed considerably
+      in future releases.
+  */
+  void setOgreViewportDimensions(const Rectf &area);
 #endif
 
-    // implement parts of CEGUI::RenderTarget interface
-    void draw(const GeometryBuffer& buffer, uint32 drawModeMask = DrawModeMaskAll);
-    void draw(const RenderQueue& queue, uint32 drawModeMask = DrawModeMaskAll);
-    void setArea(const Rectf& area);
-    const Rectf& getArea() const;
-    void activate();
-    void deactivate();
-    void unprojectPoint(const GeometryBuffer& buff,
-                        const Vector2f& p_in, Vector2f& p_out) const;
+  // implement parts of CEGUI::RenderTarget interface
+  void draw(const GeometryBuffer &buffer) override;
+  void draw(const RenderQueue &queue) override;
+  void setArea(const Rectf &area);
+  const Rectf &getArea() const;
+  void activate();
+  void deactivate();
+  void unprojectPoint(const GeometryBuffer &buff, const Vector2f &p_in,
+                      Vector2f &p_out) const;
 
 protected:
-    //! helper that initialises the cached matrix
-    void updateMatrix() const;
-    //! helper that initialises the viewport
-    void updateViewport();
+  //! helper that initialises the cached matrix
+  void updateMatrix() const;
+  //! helper that initialises the viewport
+  void updateViewport();
 #if !defined(CEGUI_USE_OGRE_COMPOSITOR2)
-    //! helper to update the actual Ogre viewport dimensions
-    void updateOgreViewportDimensions(const Ogre::RenderTarget* const rt);
+  //! helper to update the actual Ogre viewport dimensions
+  void updateOgreViewportDimensions(const Ogre::RenderTarget *const rt);
 #endif
 
-    //! OgreRenderer object that owns this RenderTarget
-    OgreRenderer& d_owner;
-    //! Ogre RendererSystem used to affect the rendering process
-    Ogre::RenderSystem& d_renderSystem;
-    //! holds defined area for the RenderTarget
-    Rectf d_area;
-    //! Ogre render target that we are effectively wrapping
-    Ogre::RenderTarget* d_renderTarget;
+  //! OgreRenderer object that owns this RenderTarget
+  OgreRenderer &d_owner;
+  //! Ogre RendererSystem used to affect the rendering process
+  Ogre::RenderSystem &d_renderSystem;
+  //! holds defined area for the RenderTarget
+  Rectf d_area;
+  //! Ogre render target that we are effectively wrapping
+  Ogre::RenderTarget *d_renderTarget;
 #ifdef CEGUI_USE_OGRE_COMPOSITOR2
 
-    //! Set when the workspace needs to switch render targets
-    bool d_renderTargetUpdated;
+  //! Set when the workspace needs to switch render targets
+  bool d_renderTargetUpdated;
 
 #else
-    //! Ogre viewport used for this target.
-    Ogre::Viewport* d_viewport;
+  //! Ogre viewport used for this target.
+  Ogre::Viewport *d_viewport;
 #endif // CEGUI_USE_OGRE_COMPOSITOR2
 
-    //! projection / view matrix cache
-    mutable Ogre::Matrix4 d_matrix;
-    //! true when d_matrix is valid and up to date
-    mutable bool d_matrixValid;
-    //! tracks viewing distance (this is set up at the same time as d_matrix)
-    mutable float d_viewDistance;
-    //! true when d_viewport is up to date and valid.
-    //! \version Beginning from Ogre 2.0 this indicates whether the workspace is
-    //! up to date
-    bool d_viewportValid;
+  //! projection / view matrix cache
+  mutable Ogre::Matrix4 d_matrix;
+  //! true when d_matrix is valid and up to date
+  mutable bool d_matrixValid;
+  //! tracks viewing distance (this is set up at the same time as d_matrix)
+  mutable float d_viewDistance;
+  //! true when d_viewport is up to date and valid.
+  //! \version Beginning from Ogre 2.0 this indicates whether the workspace is
+  //! up to date
+  bool d_viewportValid;
 #if !defined(CEGUI_USE_OGRE_COMPOSITOR2)
-    //! holds set Ogre viewport dimensions
-    Rectf d_ogreViewportDimensions;
+  //! holds set Ogre viewport dimensions
+  Rectf d_ogreViewportDimensions;
 #endif
 };
 
-} // End of  CEGUI namespace section
+} // namespace CEGUI
 
-#endif  // end of guard _CEGUIOgreRenderTarget_h_
+#endif // end of guard _CEGUIOgreRenderTarget_h_

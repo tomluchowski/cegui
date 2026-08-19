@@ -25,135 +25,113 @@
  *   OTHER DEALINGS IN THE SOFTWARE.
  ***************************************************************************/
 #include "CEGUI/RendererModules/Ogre/TextureTarget.h"
-#include "CEGUI/RendererModules/Ogre/Texture.h"
 #include "CEGUI/PropertyHelper.h"
+#include "CEGUI/RendererModules/Ogre/Texture.h"
 
-#include <OgreTextureManager.h>
 #include <OgreHardwarePixelBuffer.h>
-#include <OgreRenderTexture.h>
 #include <OgreRenderSystem.h>
+#include <OgreRenderTexture.h>
+#include <OgreTextureManager.h>
 #include <OgreViewport.h>
 
-
 // Start of CEGUI namespace section
-namespace CEGUI
-{
+namespace CEGUI {
 //----------------------------------------------------------------------------//
 const float OgreTextureTarget::DEFAULT_SIZE = 128.0f;
 uint OgreTextureTarget::s_textureNumber = 0;
 
 //----------------------------------------------------------------------------//
-OgreTextureTarget::OgreTextureTarget(OgreRenderer& owner,
-                                     Ogre::RenderSystem& rs) :
-    OgreRenderTarget<TextureTarget>(owner, rs),
-    d_CEGUITexture(0)
-{
-    d_CEGUITexture = static_cast<OgreTexture*>(
-        &d_owner.createTexture(generateTextureName()));
+OgreTextureTarget::OgreTextureTarget(OgreRenderer &owner,
+                                     Ogre::RenderSystem &rs)
+    : OgreRenderTarget<TextureTarget>(owner, rs), d_CEGUITexture(0) {
+  d_CEGUITexture =
+      static_cast<OgreTexture *>(&d_owner.createTexture(generateTextureName()));
 
-    // setup area and cause the initial texture to be generated.
-    declareRenderSize(Sizef(DEFAULT_SIZE, DEFAULT_SIZE));
+  // setup area and cause the initial texture to be generated.
+  declareRenderSize(Sizef(DEFAULT_SIZE, DEFAULT_SIZE));
 }
 
 //----------------------------------------------------------------------------//
-OgreTextureTarget::~OgreTextureTarget()
-{
-    d_owner.destroyTexture(*d_CEGUITexture);
+OgreTextureTarget::~OgreTextureTarget() {
+  d_owner.destroyTexture(*d_CEGUITexture);
 }
 
 //----------------------------------------------------------------------------//
-bool OgreTextureTarget::isImageryCache() const
-{
-    return true;
-}
+bool OgreTextureTarget::isImageryCache() const { return true; }
 
 //----------------------------------------------------------------------------//
-void OgreTextureTarget::clear()
-{
-    if (!d_viewportValid)
-        updateViewport();
+void OgreTextureTarget::clear() {
+  if (!d_viewportValid)
+    updateViewport();
 #if !defined(CEGUI_USE_OGRE_COMPOSITOR2)
-    Ogre::Viewport* const saved_vp = d_renderSystem._getViewport();
+  Ogre::Viewport *const saved_vp = d_renderSystem._getViewport();
 
-    d_renderSystem._setViewport(d_viewport);
-    d_renderSystem.clearFrameBuffer(Ogre::FBT_COLOUR,
-                                    Ogre::ColourValue(0, 0, 0, 0));
+  d_renderSystem._setViewport(d_viewport);
+  d_renderSystem.clearFrameBuffer(Ogre::FBT_COLOUR,
+                                  Ogre::ColourValue(0, 0, 0, 0));
 
 #if OGRE_VERSION < 0x10800
-    if (saved_vp)
-        d_renderSystem._setViewport(saved_vp);
-#else
+  if (saved_vp)
     d_renderSystem._setViewport(saved_vp);
+#else
+  d_renderSystem._setViewport(saved_vp);
 #endif
-#endif    
-
+#endif
 }
 
 //----------------------------------------------------------------------------//
-Texture& OgreTextureTarget::getTexture() const
-{
-    return *d_CEGUITexture;
-}
+Texture &OgreTextureTarget::getTexture() const { return *d_CEGUITexture; }
 
 //----------------------------------------------------------------------------//
-void OgreTextureTarget::declareRenderSize(const Sizef& sz)
-{
-    // exit if current size is enough
-    if ((d_area.getWidth() >= sz.d_width) && (d_area.getHeight() >=sz.d_height))
-        return;
+void OgreTextureTarget::declareRenderSize(const Sizef &sz) {
+  // exit if current size is enough
+  if ((d_area.getWidth() >= sz.d_width) && (d_area.getHeight() >= sz.d_height))
+    return;
 
-    Ogre::TexturePtr rttTex = Ogre::TextureManager::getSingleton().createManual(
-        OgreTexture::getUniqueName(),
-        Ogre::ResourceGroupManager::DEFAULT_RESOURCE_GROUP_NAME,
-        Ogre::TEX_TYPE_2D, sz.d_width, sz.d_height, 1, 0, Ogre::PF_A8R8G8B8,
-        Ogre::TU_RENDERTARGET);
+  Ogre::TexturePtr rttTex = Ogre::TextureManager::getSingleton().createManual(
+      OgreTexture::getUniqueName(),
+      Ogre::ResourceGroupManager::DEFAULT_RESOURCE_GROUP_NAME,
+      Ogre::TEX_TYPE_2D, sz.d_width, sz.d_height, 1, 0, Ogre::PF_A8R8G8B8,
+      Ogre::TU_RENDERTARGET);
 
-    d_renderTarget = rttTex->getBuffer()->getRenderTarget();
+  d_renderTarget = rttTex->getBuffer()->getRenderTarget();
 
-    Rectf init_area(
-        Vector2f(0, 0),
-        Sizef(d_renderTarget->getWidth(), d_renderTarget->getHeight())
-    );
+  Rectf init_area(Vector2f(0, 0), Sizef(d_renderTarget->getWidth(),
+                                        d_renderTarget->getHeight()));
 
-    setArea(init_area);
+  setArea(init_area);
 
 #ifdef CEGUI_USE_OGRE_COMPOSITOR2
-    // Setting this should properly change everything
-    d_renderTargetUpdated = true;
+  // Setting this should properly change everything
+  d_renderTargetUpdated = true;
 #else
-    // delete viewport and reset ptr so a new one is generated.  This is
-    // required because we have changed d_renderTarget so need a new VP also.
-    OGRE_DELETE d_viewport;
-    d_viewport = 0;
-#endif    
+  // delete viewport and reset ptr so a new one is generated.  This is
+  // required because we have changed d_renderTarget so need a new VP also.
+  OGRE_DELETE d_viewport;
+  d_viewport = 0;
+#endif
 
+  // because Texture takes ownership, the act of setting the new ogre texture
+  // also ensures any previous ogre texture is released.
+  d_CEGUITexture->setOgreTexture(rttTex, true);
 
-
-    // because Texture takes ownership, the act of setting the new ogre texture
-    // also ensures any previous ogre texture is released.
-    d_CEGUITexture->setOgreTexture(rttTex, true);
-
-    clear();
+  clear();
 }
 
 //----------------------------------------------------------------------------//
-bool OgreTextureTarget::isRenderingInverted() const
-{
-    return false;
-}
+bool OgreTextureTarget::isRenderingInverted() const { return false; }
 
 //----------------------------------------------------------------------------//
-String OgreTextureTarget::generateTextureName()
-{
-    String tmp("_ogre_tt_tex_");
-    tmp.append(PropertyHelper<uint>::toString(s_textureNumber++));
+String OgreTextureTarget::generateTextureName() {
+  String tmp("_ogre_tt_tex_");
+  tmp.append(PropertyHelper<uint>::toString(s_textureNumber++));
 
-    return tmp;
+  return tmp;
 }
 
 //----------------------------------------------------------------------------//
 
-} // End of  CEGUI namespace section
+} // namespace CEGUI
 
 //----------------------------------------------------------------------------//
 // Implementation of template base class
@@ -164,4 +142,3 @@ template class CEGUI::OgreRenderTarget<CEGUI::RenderTarget>;
 template class CEGUI::OgreRenderTarget<CEGUI::TextureTarget>;
 
 #endif
-

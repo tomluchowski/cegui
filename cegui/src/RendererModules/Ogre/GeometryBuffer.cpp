@@ -210,9 +210,19 @@ void OgreGeometryBuffer::draw(uint32 drawModeMask) const
             
             d_renderSystem._setViewport(currentViewport);
 #else
-            d_renderSystem.setScissorTest(
-                false, d_clipRect.left(), d_clipRect.top(),
-                         d_clipRect.right(), d_clipRect.bottom());
+            // Clip the batch to its window's clip rect, and make sure the
+            // scissor state never outlives the CEGUI draw (see below): leaving
+            // it enabled was what broke generating large textures for
+            // OpenDungeons and led to scissoring being disabled wholesale,
+            // which in turn let scrollable-pane content paint outside the pane.
+            if (i->clip)
+                d_renderSystem.setScissorTest(
+                    true, Ogre::Rect(static_cast<int32_t>(d_clipRect.left()),
+                                     static_cast<int32_t>(d_clipRect.top()),
+                                     static_cast<int32_t>(d_clipRect.right()),
+                                     static_cast<int32_t>(d_clipRect.bottom())));
+            else
+                d_renderSystem.setScissorTest(false);
 #endif
 
             d_renderOp.vertexData->vertexStart = pos;
@@ -236,6 +246,12 @@ void OgreGeometryBuffer::draw(uint32 drawModeMask) const
     currentViewport->setScissors(previousClipRect.left(), previousClipRect.top(),
                                     previousClipRect.right(), previousClipRect.bottom());
     d_renderSystem._setViewport(previousViewport);
+#else
+    // Never let the scissor state leak into rendering done after this buffer:
+    // Ogre render-to-texture work that runs later (e.g. OpenDungeons building
+    // its large map textures) would otherwise be clipped by whatever rectangle
+    // the last batch happened to use.
+    d_renderSystem.setScissorTest(false);
 #endif
 
     // clean up RenderEffect
